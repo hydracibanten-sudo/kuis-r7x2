@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kuis Jutawan Cilik</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html,body{margin:0;min-height:100%}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:#0a0f3c;background:radial-gradient(circle at 50% 0,#2a2f9e,#0a0f3c 70%) fixed;color:#fff;font-family:"Trebuchet MS",Verdana,sans-serif;font-size:17px;text-align:center}
+.s{display:none;padding:12px 14px 30px;max-width:520px;margin:0 auto}
+h1{font-size:28px;margin:10px 0;color:#ffd700}h2{font-size:21px;margin:8px 0}
+.b{display:block;width:100%;border:2px solid #d4af37;border-radius:30px;padding:14px;margin:10px 0;font-size:19px;font-weight:bold;color:#fff;background:linear-gradient(#1b2a9c,#0b1160);font-family:inherit}
+.b small{font-size:13px;font-weight:normal}
+.b.on{background:#e0a100;color:#111}.b.ok{background:#1fa64a}.b.no{background:#c62828}.b.dim{opacity:.25}
+.b.g{background:#d4af37;color:#111;border-color:#fff}
+.ll{display:inline-block;width:auto;font-size:15px;padding:9px 16px;margin:4px}
+.q{background:linear-gradient(#17208a,#0b1160);border:2px solid #d4af37;border-radius:26px;padding:16px;margin:10px 0;font-size:19px;font-weight:bold;min-height:90px}
+.opts{display:flex;flex-wrap:wrap;margin:0 -4px}
+.opts .b{width:calc(50% - 8px);margin:4px;font-size:16px;padding:12px 8px;min-height:64px;text-align:left;border-radius:22px}
+.pc{display:block;font-size:13px;color:#ffe082}
+.st{display:flex;justify-content:space-between;align-items:center;font-size:14px;margin:4px 0}
+.tm{height:8px;background:#1b2a9c;border-radius:6px;overflow:hidden;margin:4px 0}.tm div{height:100%}
+.lad{margin:4px 0}.lad span{display:inline-block;min-width:28px;padding:3px 3px;margin:1px;border-radius:8px;font-size:11px;background:#1b2a9c}
+.lad .r{background:#d4af37;color:#111}
+.in{display:block;width:100%;font-size:17px;padding:10px;border-radius:12px;border:2px solid #4a58d6;background:#0f1670;color:#fff;font-family:inherit;margin:6px 0}
+.card{background:#10196e;border-radius:18px;padding:12px;margin:10px 0;text-align:left}
+</style></head><body>
+
+<div id="home" class="s"><h1>💰 Kuis Jutawan Cilik</h1><p>Pilih kelasmu!</p><div id="hk"></div>
+<button class="b ll" onclick="pullSoal(1)">🔄 Update soal</button><button class="b ll" onclick="openPin()">⚙️ Orang tua</button>
+<div id="us" style="font-size:13px;color:#ffe082;min-height:18px"></div></div>
+
+<div id="game" class="s"><div id="gm"></div></div>
+
+<div id="res" class="s"><h1 id="rt"></h1><div id="rw" style="font-size:46px;color:#ffd700;font-weight:bold"></div><p id="rm"></p>
+<button class="b g" onclick="home()">🏠 Menu</button></div>
+
+<div id="pin" class="s"><h2>Khusus orang tua 🔒</h2><p>PIN awal: 1234</p>
+<input class="in" id="pi" type="password" inputmode="numeric" maxlength="8" style="text-align:center">
+<div id="pe" style="color:#ff8a80;min-height:22px"></div>
+<button class="b g" onclick="pinGo()">Buka</button><button class="b" onclick="home()">Batal</button></div>
+
+<div id="par" class="s" style="text-align:left">
+<h2 style="text-align:center">Pengaturan orang tua</h2>
+<div class="card"><b>Hadiah puncak (Rp)</b><br><small>Titik aman = 10% puncak, nilai tiap soal = 2,5% puncak.</small>
+<input class="in" id="tp" type="tel"><button class="b ll" onclick="saveTop()">Simpan</button></div>
+<div id="pk"></div>
+<div class="card"><b>Tempel soal (satu baris per soal)</b><br>
+<small>Soal umum:<br>Kelas | Mapel | Tingkat | Pertanyaan | Benar | Salah 1 | Salah 2 | Salah 3<br>Soal logika:<br>LOGIKA | Kelas | Tingkat | Pertanyaan | Benar | Salah 1 | Salah 2 | Salah 3<br>Kelas 7, 9, atau semua (untuk kedua kelas). Tingkat 1 (mudah) sampai 3 (sulit).</small>
+<textarea class="in" id="tx" rows="6"></textarea>
+<button class="b ll" onclick="addTxt()">＋ Tambah</button><button class="b ll" onclick="clearAll()">🗑 Kosongkan semua soal</button>
+<div id="rs"></div></div>
+<div class="card"><b>☁️ Sinkron online (GitHub)</b><br><small>Repo berisi file soal.json. Kosongkan repo jika aplikasi dibuka dari alamat github.io (terbaca otomatis). Token hanya diisi di HP orang tua.</small>
+<input class="in" id="gr" placeholder="pemilik/nama-repo">
+<input class="in" id="gb" placeholder="cabang (kosong = main)">
+<input class="in" id="gt" type="password" placeholder="Token GitHub">
+<button class="b ll" onclick="saveGh()">Simpan</button><button class="b ll" onclick="pubSoal()">🚀 Terbitkan soal</button><button class="b ll" onclick="pullSoal(1)">🔄 Tarik soal</button>
+<div id="gs" style="font-size:13px;margin-top:6px"></div></div>
+<div class="card"><b>Ganti PIN</b><input class="in" id="np" type="tel" maxlength="8" placeholder="PIN baru (min. 4 angka)">
+<button class="b ll" onclick="newPin()">Simpan PIN</button></div>
+<button class="b g" onclick="home()">🏠 Selesai</button></div>
+
+<script>
+var K='mm_',G=null,ac=null;
+function sg(k,d){try{var v=localStorage.getItem(K+k);return v?JSON.parse(v):d}catch(e){return d}}
+function ss(k,v){try{localStorage.setItem(K+k,JSON.stringify(v));return 1}catch(e){return 0}}
+function $(i){return document.getElementById(i)}
+function R(n){return Math.floor(Math.random()*n)}
+function sh(a){for(var i=a.length-1;i>0;i--){var j=R(i+1),t=a[i];a[i]=a[j];a[j]=t}return a}
+function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;')}
+function tr(t){return String(t).replace(/^\s+|\s+$/g,'')}
+function rp(n){return 'Rp'+String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,'.')}
+function lab(n){var v=n/1000;return (v%1?v.toFixed(1).replace('.',','):v)+'rb'}
+function rnd50(x){return Math.round(x/50)*50}
+function today(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()}
+function show(id){var s=document.querySelectorAll('.s');for(var i=0;i<s.length;i++)s[i].style.display='none';$(id).style.display='block';window.scrollTo(0,0)}
+function beep(f,d){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();var o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f;g.gain.value=.15;o.connect(g);g.connect(ac.destination);o.start();setTimeout(function(){o.stop()},d)}catch(e){}}
+function snd(ok){if(ok){beep(660,120);setTimeout(function(){beep(880,200)},140)}else beep(260,300)}
+
+var SEED=['7 | Matematika | 1 | Hasil dari 12 × 5 adalah… | 60 | 50 | 65 | 70',
+'7 | IPA | 1 | Planet terdekat dari Matahari adalah… | Merkurius | Venus | Mars | Bumi',
+'7 | IPS | 2 | Ibu kota Provinsi Jawa Timur adalah… | Surabaya | Malang | Semarang | Bandung',
+'7 | Bahasa Indonesia | 2 | Lawan kata "lestari" adalah… | punah | kekal | abadi | tetap',
+'7 | Matematika | 3 | Jika 3x + 5 = 20, maka x adalah… | 5 | 4 | 6 | 15',
+'7 | IPA | 3 | Perubahan wujud gas menjadi cair disebut… | mengembun | menguap | membeku | menyublim',
+'9 | Matematika | 1 | Akar kuadrat dari 144 adalah… | 12 | 14 | 11 | 24',
+'9 | IPA | 1 | Satuan SI untuk gaya adalah… | Newton | Joule | Watt | Pascal',
+'9 | IPS | 2 | Proklamasi kemerdekaan Indonesia dibacakan pada tahun… | 1945 | 1944 | 1946 | 1950',
+'9 | Bahasa Inggris | 2 | Bentuk lampau dari "go" adalah… | went | goed | gone | going',
+'9 | Matematika | 3 | Jika f(x) = 2x + 3, maka f(5) adalah… | 13 | 10 | 11 | 15',
+'9 | IPA | 3 | Pewarisan sifat dari induk ke keturunan dipelajari dalam… | genetika | ekologi | anatomi | fisiologi',
+'LOGIKA | 1 | Semua naga suka cokelat. Bimo adalah naga. Jadi… | Bimo suka cokelat | Bimo tidak suka cokelat | Semua penyuka cokelat adalah naga | Bimo bukan naga',
+'LOGIKA | 1 | Semua kucing berbulu. Mimi adalah kucing. Jadi… | Mimi berbulu | Mimi tidak berbulu | Semua yang berbulu adalah kucing | Mimi bukan kucing',
+'LOGIKA | 2 | Semua penyihir bisa terbang. Rara bisa terbang. Kesimpulan yang pasti benar? | Belum pasti Rara penyihir | Rara pasti penyihir | Rara pasti bukan penyihir | Semua yang terbang adalah penyihir',
+'LOGIKA | 2 | Tidak ada robot yang makan nasi. Dodo adalah robot. Jadi… | Dodo tidak makan nasi | Dodo makan nasi | Dodo bukan robot | Dodo makan roti',
+'LOGIKA | 3 | Jika hujan, jalan basah. Jalan basah. Apa yang pasti benar? | Belum tentu hujan | Pasti hujan | Pasti tidak hujan | Jalan kering',
+'LOGIKA | 3 | Semua A adalah B. Sebagian B adalah C. Kesimpulan yang pasti benar? | Hubungan A dan C belum pasti | Sebagian A adalah C | Semua A adalah C | Tidak ada A yang C'].join('\n');
+
+var db=sg('db',null);
+function imp(t){var L=t.split(/\r?\n/),i,j,p,ok=0,bad=0;
+for(i=0;i<L.length;i++){if(!tr(L[i]))continue;p=L[i].split('|');for(j=0;j<p.length;j++)p[j]=tr(p[j]);
+if(p[0].toUpperCase()=='LOGIKA'){var kk=0,o=1;if(/^(7|9|semua)$/i.test(p[1])){kk=/^semua$/i.test(p[1])?0:+p[1];o=2}
+if(p.length>=o+6&&p[o]>=1&&p[o]<=3&&p[o+1]&&p[o+2]&&p[o+3]&&p[o+4]&&p[o+5]){db.lg.push({k:kk,t:Math.round(p[o]),q:p[o+1],o:p.slice(o+2,o+6)});ok++}else bad++}
+else{if(p.length>=8&&(p[0]==7||p[0]==9)&&p[2]>=1&&p[2]<=3&&p[3]&&p[4]&&p[5]&&p[6]&&p[7]){db.bank.push({k:+p[0],m:p[1],t:Math.round(p[2]),q:p[3],o:p.slice(4,8)});ok++}else bad++}}
+if(ok)db.dirty=1;ss('db',db);return[ok,bad]}
+if(!db){db={pin:'1234',top:10000,bank:[],lg:[],p:{7:{s:0,h:[],d:'',n:0,seen:{}},9:{s:0,h:[],d:'',n:0,seen:{}}}};imp(SEED);db.dirty=0;db.sv=0;ss('db',db)}
+
+function home(){var h='',a=[7,9],i,k,p,left;
+for(i=0;i<2;i++){k=a[i];p=db.p[k];if(p.d!=today()){p.d=today();p.n=0}left=Math.max(0,2-p.n);
+h+='<button class="b'+(left?'':' dim')+'" onclick="go('+k+')">🎓 Kelas '+(k==7?'VII':'IX')+'<br><small>Sisa main hari ini: '+left+' · Saldo '+rp(p.s)+'</small></button>'}
+$('hk').innerHTML=h;show('home')}
+
+function dif(i){var b=Math.floor(i/4)+1;return i%4==3?(b<=2?1:b<=5?2:3):(b<=3?1:b<=7?2:3)}
+function pk(pool,t,used,seen){var f=[function(x){return x.t==t&&!used[x.q]&&!seen[x.q]},function(x){return x.t==t&&!used[x.q]},function(x){return !used[x.q]},function(){return 1}],i,j,c;
+for(i=0;i<4;i++){c=[];for(j=0;j<pool.length;j++)if(f[i](pool[j]))c.push(pool[j]);if(c.length)return c[R(c.length)]}return null}
+
+function go(k){var p=db.p[k],pool=[],lp=[],i,t,x,lg,used={},qs=[];
+if(p.d!=today()){p.d=today();p.n=0}
+if(p.n>=2){alert('Jatah main hari ini habis. Besok main lagi ya!');return}
+for(i=0;i<db.bank.length;i++)if(db.bank[i].k==k)pool.push(db.bank[i]);
+for(i=0;i<db.lg.length;i++)if(!db.lg[i].k||db.lg[i].k==k)lp.push(db.lg[i]);
+if(!pool.length){alert('Belum ada soal untuk kelas ini. Minta orang tua mengisi soal.');return}
+p.n++;ss('db',db);
+for(i=0;i<40;i++){t=dif(i);lg=(i+1)%3==0&&lp.length>0;x=lg?pk(lp,t,used,{}):pk(pool,t,used,p.seen);used[x.q]=1;qs.push({q:x.q,o:x.o,lg:lg?1:0,t:t})}
+G={k:k,qs:qs,i:0,won:0,safe:0,f:0,a:0,ok:0,strike:0,need:0,help:0,end:0,t0:0,tOffer:0,to:0};ask()}
+
+function ask(){G.ord=sh([0,1,2,3]);G.sel=-1;G.lock=0;G.hid={};G.pct=null;G.help=0;G.need=(G.strike&&G.f<3)?1:0;startT();render();show('game')}
+function render(){var q=G.qs[G.i],T=db.top,b=Math.floor(G.i/4)+1,pj=G.i%4==3,h='',j,o,c,offer=!G.lock&&(G.need||(G.tOffer&&G.f<3&&!G.help)),nx=pj?T*b/10:G.won+T/40;
+h+='<div class="st"><button class="b ll" style="margin:0;padding:5px 12px" onclick="homeBtn()">🏠</button><span>Soal '+(G.i+1)+'/40'+(pj?' 🔒 penjaga':'')+(q.lg?' 🧠':'')+'</span><span>Aman: '+rp(G.safe)+'</span></div><div class="lad">';
+for(j=1;j<=10;j++)h+='<span'+(G.safe>=T*j/10?' class="r"':'')+'>'+lab(T*j/10)+'</span>';
+h+='</div><div class="st"><span>Hadiah: <b>'+rp(G.won)+'</b></span><span id="tt" style="font-weight:bold;color:#ffd700">'+(G.lock?'':'⏱ '+tleft())+'</span><span>Jika benar: '+rp(nx)+'</span></div><div class="tm"><div id="tb" style="'+tbar()+'"></div></div>';
+if(!G.lock&&!offer)h+='<div><button class="b ll'+(G.f&1?' dim':'')+'" onclick="ll(1)">50:50</button><button class="b ll'+(G.f&2?' dim':'')+'" onclick="ll(2)">👥 Tanya teman</button></div>';
+h+='<div class="q">'+esc(q.q)+'</div><div class="opts">';
+for(j=0;j<4;j++){o=G.ord[j];c='b';if(G.hid[o])c+=' dim';if(G.lock){if(o==0)c+=' ok';else if(o==G.sel)c+=' no'}else if(G.sel==o)c+=' on';
+h+='<button class="'+c+'"'+((G.lock||G.hid[o])?'':' onclick="sel('+o+')"')+'>'+'ABCD'.charAt(j)+'. '+esc(q.o[o])+(G.pct&&!G.hid[o]&&G.pct[o]!=null?'<span class="pc">'+G.pct[o]+'%</span>':'')+'</button>'}
+h+='</div>';
+if(G.lock)h+='<p>'+G.msg+'</p><button class="b g" onclick="nxt()">Lanjut ➜</button>';
+else{if(offer)h+='<div class="card">'+(G.need?'⚠️ Kamu sudah pernah salah. Pakai bantuan? Kalau tidak dan jawabanmu salah, kamu langsung kalah dan hanya bawa titik aman.':'⏰ Sudah 15 detik. Mau pakai bantuan?')+'<br>'+(G.f&1?'':'<button class="b ll" onclick="ll(1)">50:50</button>')+(G.f&2?'':'<button class="b ll" onclick="ll(2)">👥 Tanya teman</button>')+'</div>';if(G.sel>=0)h+='<button class="b g" onclick="lockIt()">🔒 Kunci '+(G.need?'tanpa bantuan':'jawaban')+'</button>';h+='<button class="b" onclick="quit()">🏁 Berhenti, bawa '+rp(G.won)+'</button>'}
+$('gm').innerHTML=h}
+
+var TM=0;
+function tleft(){return G.lock?0:Math.max(0,30-Math.floor((Date.now()-G.t0)/1000))}
+function tbar(){var l=tleft();return 'width:'+(l/30*100)+'%;background:'+(l<=10?'#ff5252':'#ffd700')}
+function stopT(){if(TM){clearInterval(TM);TM=0}}
+function startT(){stopT();G.t0=Date.now();G.tOffer=0;G.to=0;TM=setInterval(tick,400)}
+function tick(){if(!G||G.lock){stopT();return}var l=tleft(),e=$('tt'),b=$('tb');
+if(e)e.textContent='⏱ '+l;if(b)b.style.cssText=tbar();
+if(!G.tOffer&&l<=15){G.tOffer=1;if(G.f<3&&!G.help)render()}
+if(l<=0)tmo()}
+function tmo(){stopT();if(G.lock)return;if(G.sel==-1){G.sel=-2;G.to=1}lockIt()}
+function sel(o){G.sel=o;render()}
+function ll(n){if((G.f&n)||G.lock)return;var q=G.qs[G.i],j,w,vis=[],s=0,base,rest,ws={};G.f|=n;G.need=0;G.help=1;
+if(n==1){w=sh([1,2,3]);G.hid[w[0]]=1;G.hid[w[1]]=1;if(G.hid[G.sel])G.sel=-1}
+else{base=(q.t==1?72:q.t==2?52:36)+R(14);rest=100-base;
+for(j=0;j<4;j++)if(!G.hid[j]){vis.push(j);ws[j]=j?1+R(5):0;s+=ws[j]}
+G.pct={};for(j=0;j<vis.length;j++)G.pct[vis[j]]=vis[j]?Math.round(rest*ws[vis[j]]/s):base}
+render()}
+function lockIt(){if(G.sel==-1)return;stopT();var q=G.qs[G.i],T=db.top,b=Math.floor(G.i/4)+1,pj=G.i%4==3,ok=G.sel==0;G.lock=1;G.a++;snd(ok);
+if(ok){G.ok++;db.p[G.k].seen[q.q]=1;
+if(pj){G.won=T*b/10;G.safe=G.won;G.msg='✅ Benar! Titik aman '+rp(G.safe)+' terkunci!'}
+else{G.won+=T/40;G.msg='✅ Benar! Hadiah '+rp(G.won)}}
+else if(pj){G.end='salah';G.msg='❌ Salah di soal penjaga! Hadiah di atas titik aman hangus. Kamu bawa '+rp(G.safe)}
+else if(G.strike&&!G.help){G.end='salah';G.msg='❌ Salah tanpa bantuan! Kamu langsung kalah dan hanya membawa '+rp(G.safe)}
+else{G.strike=1;G.won=G.safe+rnd50((G.won-G.safe)/2);G.msg='❌ Salah! Hadiah dipotong 50% jadi '+rp(G.won)}
+if(G.strike&&G.f==3&&!G.end&&G.i<39){G.end='bantuan';G.msg+=' Bantuan sudah habis, permainan selesai. Kamu bawa '+rp(G.safe)}
+if(G.to)G.msg='⏰ Waktu habis! '+G.msg;ss('db',db);render()}
+function nxt(){if(G.end=='salah')fin(G.safe,'salah');else if(G.i>=39)fin(db.top,'tamat');else if(G.end=='bantuan')fin(G.safe,'bantuan habis');else{G.i++;ask()}}
+function quit(){if(confirm('Berhenti dan bawa pulang '+rp(G.won)+'?'))fin(G.won,'berhenti')}
+function homeBtn(){var w=G.end?G.safe:G.won;if(confirm('Kembali ke menu? Permainan berakhir dan hadiah '+rp(w)+' dibawa pulang.'))fin(w,'berhenti',1)}
+function fin(w,how,skip){stopT();var p=db.p[G.k];p.s+=w;p.h.unshift({d:today(),w:w,ok:G.ok,n:G.a,e:how});p.h=p.h.slice(0,30);ss('db',db);if(skip){home();return}
+$('rt').textContent=how=='tamat'?'🏆 JUTAWAN! Kamu sampai puncak!':how=='berhenti'?'🏁 Kamu berhenti dengan selamat':how=='bantuan habis'?'🆘 Bantuan habis, permainan selesai':'😢 Permainan selesai';
+$('rw').textContent=rp(w);$('rm').textContent=G.ok+' dari '+G.a+' soal benar. Hadiah masuk saldo, minta orang tuamu membayarnya.';
+snd(w>0);show('res')}
+
+function openPin(){$('pi').value='';$('pe').textContent='';show('pin')}
+function pinGo(){if($('pi').value===db.pin){rpar();show('par')}else $('pe').textContent='PIN salah, coba lagi.'}
+function rpar(){var h='',a=[7,9],i,j,k,p,n,x;$('tp').value=db.top;
+$('gr').value=(db.gh&&db.gh.repo)||'';$('gb').value=(db.gh&&db.gh.br)||'';$('gt').placeholder=sg('tok','')?'Token tersimpan (isi untuk mengganti)':'Token GitHub';
+$('gs').textContent='Versi soal: '+(db.sv?new Date(db.sv).toLocaleString():'-')+(db.dirty?' · ada perubahan belum diterbitkan':'');
+for(i=0;i<2;i++){k=a[i];p=db.p[k];n=0;for(j=0;j<db.bank.length;j++)if(db.bank[j].k==k)n++;
+h+='<div class="card"><b>Kelas '+(k==7?'VII':'IX')+'</b> · '+n+' soal<br>Saldo belum dibayar: <b>'+rp(p.s)+'</b><br><button class="b ll" onclick="pay('+k+')">✅ Tandai sudah dibayar</button><button class="b ll" onclick="plus('+k+')">+1 jatah main</button><div style="font-size:13px">';
+for(j=0;j<p.h.length&&j<8;j++){x=p.h[j];h+=x.d+' · '+(x.e=='DIBAYAR'?'dibayar '+rp(x.w):rp(x.w)+' · '+x.ok+'/'+x.n+' benar · '+x.e)+'<br>'}
+h+='</div></div>'}
+var c=[0,0,0];for(j=0;j<db.lg.length;j++)c[db.lg[j].k==7?0:db.lg[j].k==9?1:2]++;
+$('pk').innerHTML=h+'<div class="card">Soal logika: kelas VII '+c[0]+' · kelas IX '+c[1]+' · umum (kedua kelas) '+c[2]+'</div>'}
+function pay(k){var p=db.p[k];if(p.s>0&&confirm('Tandai '+rp(p.s)+' sudah dibayar?')){p.h.unshift({d:today(),w:p.s,ok:0,n:0,e:'DIBAYAR'});p.s=0;ss('db',db);rpar()}}
+function plus(k){var p=db.p[k];p.n=Math.max(0,p.n-1);ss('db',db);alert('Jatah main hari ini ditambah 1.')}
+function saveTop(){var v=Math.round(parseInt($('tp').value,10)/1000)*1000;if(!(v>=2000)){alert('Minimal Rp2.000.');return}db.top=v;ss('db',db);alert('Hadiah puncak: '+rp(v))}
+function addTxt(){var r=imp($('tx').value);$('tx').value='';$('rs').textContent=r[0]+' soal ditambahkan'+(r[1]?', '+r[1]+' baris dilewati (format kurang lengkap).':'.');rpar()}
+function clearAll(){if(confirm('Hapus SEMUA soal (umum dan logika)?')){db.bank=[];db.lg=[];db.dirty=1;ss('db',db);rpar()}}
+function newPin(){var v=tr($('np').value);if(v.length<4){alert('PIN minimal 4 angka.');return}db.pin=v;ss('db',db);$('np').value='';alert('PIN tersimpan.')}
+function ajax(m,u,h,b,cb){try{var x=new XMLHttpRequest(),k;x.open(m,u,true);for(k in h)x.setRequestHeader(k,h[k]);x.timeout=20000;x.onload=function(){cb(x.status,x.responseText)};x.onerror=function(){cb(0,'')};x.ontimeout=x.onerror;x.send(b||null)}catch(e){cb(0,'')}}
+function ghRepo(){var r=tr((db.gh&&db.gh.repo)||'').replace(/^https?:\/\/github\.com\//,'').replace(/\/$/,''),m;
+if(!r&&/\.github\.io$/.test(location.hostname)){m=location.pathname.split('/')[1];r=location.hostname.split('.')[0]+'/'+(m||location.hostname)}return r}
+function ghBr(){return tr((db.gh&&db.gh.br)||'')||'main'}
+function ghApi(r){return 'https://api.github.com/repos/'+r+'/contents/soal.json'}
+function pagesUrl(r){var p=r.split('/'),o=p[0],n=p[1]||'';return n.toLowerCase()==o.toLowerCase()+'.github.io'?'https://'+o+'.github.io/soal.json':'https://'+o+'.github.io/'+n+'/soal.json'}
+function say(man,t){if(man||t.charAt(0)=='✅'){var e=$('us'),g=$('gs');if(e)e.textContent=t;if(g)g.textContent=t}}
+function okQ(x){return x&&x.q&&x.o&&x.o.length==4}
+function pullSoal(man){var r=ghRepo();
+if(!r){if(man)alert('Alamat soal online belum diatur. Minta orang tua mengisinya di pengaturan.');return}
+if(man&&db.dirty&&!confirm('Soal di HP ini belum diterbitkan dan akan tertimpa. Lanjut?'))return;
+say(man,'Mengecek soal online…');
+ajax('GET',pagesUrl(r)+'?_='+Date.now(),{},null,function(st,tx){var d,b=[],l=[],i;
+if(st==404){say(man,'Belum ada soal online (tunggu sekitar 1 menit setelah diterbitkan).');return}
+if(st!=200){say(man,'Tidak bisa terhubung (kode '+st+'). Cek internet.');return}
+try{d=JSON.parse(tx)}catch(e){say(man,'File soal online rusak.');return}
+if(!d||!d.v){say(man,'File soal online tidak dikenali.');return}
+if(!man&&(d.v<=db.sv||db.dirty))return;
+if(d.v<=db.sv&&!db.dirty){say(man,'Soal sudah yang terbaru.');return}
+for(i=0;i<(d.bank||[]).length;i++)if(okQ(d.bank[i])&&(d.bank[i].k==7||d.bank[i].k==9))b.push(d.bank[i]);
+for(i=0;i<(d.lg||[]).length;i++)if(okQ(d.lg[i]))l.push(d.lg[i]);
+if(!b.length){say(man,'Soal online kosong, tidak dipakai.');return}
+db.bank=b;db.lg=l;db.sv=d.v;db.dirty=0;ss('db',db);say(man,'✅ Soal diperbarui: '+b.length+' soal + '+l.length+' logika.')})}
+function saveGh(){var t=tr($('gt').value);db.gh={repo:tr($('gr').value),br:tr($('gb').value)};if(t)ss('tok',t);ss('db',db);rpar();say(1,'Pengaturan disimpan.')}
+function pubSoal(){var r=ghRepo(),tok=sg('tok',''),v=Date.now(),u,h;
+if(!r||!tok){alert('Isi repo dan token GitHub dulu, lalu tekan Simpan.');return}
+if(!db.bank.length){alert('Belum ada soal untuk diterbitkan.');return}
+u=ghApi(r);h={'Accept':'application/vnd.github+json','Authorization':'Bearer '+tok};say(1,'Mengirim soal…');
+ajax('GET',u+'?ref='+ghBr()+'&_='+v,h,null,function(st,tx){var sha,o;
+if(st==200){try{sha=JSON.parse(tx).sha}catch(e){}}else if(st!=404){say(1,'Gagal (kode '+st+'). Cek nama repo dan token.');return}
+o={message:'Update soal',content:btoa(unescape(encodeURIComponent(JSON.stringify({v:v,bank:db.bank,lg:db.lg})))),branch:ghBr()};if(sha)o.sha=sha;
+h['Content-Type']='application/json';
+ajax('PUT',u,h,JSON.stringify(o),function(s2){if(s2==200||s2==201){db.sv=v;db.dirty=0;ss('db',db);say(1,'✅ Terbit: '+db.bank.length+' soal + '+db.lg.length+' logika. HP anak menarik otomatis dalam sekitar 1-2 menit.')}else say(1,'Gagal menerbitkan (kode '+s2+'). Cek izin token (Contents: Read and write).')})})}
+home();pullSoal(0);
+</script></body></html>
