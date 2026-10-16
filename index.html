@@ -26,16 +26,16 @@ h1{font-size:28px;margin:10px 0;color:#ffd700}h2{font-size:21px;margin:8px 0}
 .card{background:#10196e;border-radius:18px;padding:12px;margin:10px 0;text-align:left}
 </style></head><body>
 
-<div id="home" class="s"><h1>💰 Kuis Jutawan Cilik</h1><p>Pilih kelasmu!</p><div id="hk"></div>
-<button class="b ll" onclick="pullSoal(1)">🔄 Update soal</button><button class="b ll" onclick="openPin()">⚙️ Orang tua</button>
-<div id="us" style="font-size:13px;color:#ffe082;min-height:18px"></div></div>
+<div id="home" class="s"><h1>💰 Kuis Jutawan Cilik</h1><p>Pilih kelasmu!</p><div id="hk"></div><div style="font-size:12px;color:#ffe082">⏱ 30 detik per soal. Keluar dari aplikasi saat soal berjalan = jawaban salah.</div>
+<button class="b ll" onclick="pullSoal(1);flushQ();syncPay()">🔄 Update soal</button><button class="b ll" onclick="openPin()">⚙️ Orang tua</button>
+<div id="us" style="font-size:13px;color:#ffe082;min-height:18px"></div><div id="ver" style="font-size:11px;opacity:.6;margin-top:10px"></div></div>
 
 <div id="game" class="s"><div id="gm"></div></div>
 
 <div id="res" class="s"><h1 id="rt"></h1><div id="rw" style="font-size:46px;color:#ffd700;font-weight:bold"></div><p id="rm"></p>
 <button class="b g" onclick="home()">🏠 Menu</button></div>
 
-<div id="pin" class="s"><h2>Khusus orang tua 🔒</h2><p>PIN awal: 1234</p>
+<div id="pin" class="s"><h2>Khusus orang tua 🔒</h2><p>Masukkan PIN</p>
 <input class="in" id="pi" type="password" inputmode="numeric" maxlength="8" style="text-align:center">
 <div id="pe" style="color:#ff8a80;min-height:22px"></div>
 <button class="b g" onclick="pinGo()">Buka</button><button class="b" onclick="home()">Batal</button></div>
@@ -43,7 +43,7 @@ h1{font-size:28px;margin:10px 0;color:#ffd700}h2{font-size:21px;margin:8px 0}
 <div id="par" class="s" style="text-align:left">
 <h2 style="text-align:center">Pengaturan orang tua</h2>
 <div class="card"><b>Hadiah puncak (Rp)</b><br><small>Titik aman = 10% puncak, nilai tiap soal = 2,5% puncak.</small>
-<input class="in" id="tp" type="tel"><button class="b ll" onclick="saveTop()">Simpan</button></div>
+<input class="in" id="tp" type="tel"><b>Batas main per hari</b><input class="in" id="mx" type="tel"><button class="b ll" onclick="saveTop()">Simpan</button><small> Setelah menyimpan, tekan 🚀 Terbitkan soal agar sampai ke HP anak.</small></div>
 <div id="pk"></div>
 <div class="card"><b>Tempel soal (satu baris per soal)</b><br>
 <small>Soal umum:<br>Kelas | Mapel | Tingkat | Pertanyaan | Benar | Salah 1 | Salah 2 | Salah 3<br>Soal logika:<br>LOGIKA | Kelas | Tingkat | Pertanyaan | Benar | Salah 1 | Salah 2 | Salah 3<br>Kelas 7, 9, atau semua (untuk kedua kelas). Tingkat 1 (mudah) sampai 3 (sulit).</small>
@@ -56,12 +56,18 @@ h1{font-size:28px;margin:10px 0;color:#ffd700}h2{font-size:21px;margin:8px 0}
 <input class="in" id="gt" type="password" placeholder="Token GitHub">
 <button class="b ll" onclick="saveGh()">Simpan</button><button class="b ll" onclick="pubSoal()">🚀 Terbitkan soal</button><button class="b ll" onclick="pullSoal(1)">🔄 Tarik soal</button>
 <div id="gs" style="font-size:13px;margin-top:6px"></div></div>
+<div class="card"><b>📒 Catatan hasil anak (GitHub)</b><br><small>Pakai repo terpisah (sebaiknya Private) dan token yang hanya punya akses ke repo itu. Isi di HP Anda dan di HP anak. Di HP anak, centang kotak di bawah.</small>
+<input class="in" id="hr" placeholder="pemilik/repo-hasil">
+<input class="in" id="ht" type="password" placeholder="Token catatan">
+<label style="font-size:14px"><input type="checkbox" id="hrep"> HP ini adalah HP anak (catat hasil permainan)</label><br>
+<button class="b ll" onclick="saveHr()">Simpan</button><button class="b ll" onclick="loadLedger()">🔄 Muat catatan</button><button class="b ll" onclick="flushQ(function(){hsay('Selesai mengirim antrean.')})">⬆️ Kirim antrean</button>
+<div id="hs" style="font-size:13px"></div><div id="lg" style="font-size:14px"></div></div>
 <div class="card"><b>Ganti PIN</b><input class="in" id="np" type="tel" maxlength="8" placeholder="PIN baru (min. 4 angka)">
 <button class="b ll" onclick="newPin()">Simpan PIN</button></div>
 <button class="b g" onclick="home()">🏠 Selesai</button></div>
 
 <script>
-var K='mm_',G=null,ac=null;
+var K='mm_',VER='2026.10.15-c',G=null,ac=null;
 function sg(k,d){try{var v=localStorage.getItem(K+k);return v?JSON.parse(v):d}catch(e){return d}}
 function ss(k,v){try{localStorage.setItem(K+k,JSON.stringify(v));return 1}catch(e){return 0}}
 function $(i){return document.getElementById(i)}
@@ -103,20 +109,21 @@ if(p[0].toUpperCase()=='LOGIKA'){var kk=0,o=1;if(/^(7|9|semua)$/i.test(p[1])){kk
 if(p.length>=o+6&&p[o]>=1&&p[o]<=3&&p[o+1]&&p[o+2]&&p[o+3]&&p[o+4]&&p[o+5]){db.lg.push({k:kk,t:Math.round(p[o]),q:p[o+1],o:p.slice(o+2,o+6)});ok++}else bad++}
 else{if(p.length>=8&&(p[0]==7||p[0]==9)&&p[2]>=1&&p[2]<=3&&p[3]&&p[4]&&p[5]&&p[6]&&p[7]){db.bank.push({k:+p[0],m:p[1],t:Math.round(p[2]),q:p[3],o:p.slice(4,8)});ok++}else bad++}}
 if(ok)db.dirty=1;ss('db',db);return[ok,bad]}
-if(!db){db={pin:'1234',top:10000,bank:[],lg:[],p:{7:{s:0,h:[],d:'',n:0,seen:{}},9:{s:0,h:[],d:'',n:0,seen:{}}}};imp(SEED);db.dirty=0;db.sv=0;ss('db',db)}
+if(!db){db={pin:'24434',top:10000,bank:[],lg:[],p:{7:{s:0,h:[],d:'',n:0,seen:{}},9:{s:0,h:[],d:'',n:0,seen:{}}}};imp(SEED);db.dirty=0;db.sv=0;ss('db',db)}
+if(db.pin==='1234'){db.pin='24434';ss('db',db)}
 
 function home(){var h='',a=[7,9],i,k,p,left;
-for(i=0;i<2;i++){k=a[i];p=db.p[k];if(p.d!=today()){p.d=today();p.n=0}left=Math.max(0,2-p.n);
+for(i=0;i<2;i++){k=a[i];p=db.p[k];if(p.d!=today()){p.d=today();p.n=0;p.x=0}left=Math.max(0,(db.max||2)+(p.x||0)-p.n);
 h+='<button class="b'+(left?'':' dim')+'" onclick="go('+k+')">🎓 Kelas '+(k==7?'VII':'IX')+'<br><small>Sisa main hari ini: '+left+' · Saldo '+rp(p.s)+'</small></button>'}
-$('hk').innerHTML=h;show('home')}
+$('hk').innerHTML=h;$('ver').textContent='Versi '+VER+' · soal '+(db.sv?new Date(db.sv).toLocaleDateString():'bawaan');show('home')}
 
 function dif(i){var b=Math.floor(i/4)+1;return i%4==3?(b<=2?1:b<=5?2:3):(b<=3?1:b<=7?2:3)}
 function pk(pool,t,used,seen){var f=[function(x){return x.t==t&&!used[x.q]&&!seen[x.q]},function(x){return x.t==t&&!used[x.q]},function(x){return !used[x.q]},function(){return 1}],i,j,c;
 for(i=0;i<4;i++){c=[];for(j=0;j<pool.length;j++)if(f[i](pool[j]))c.push(pool[j]);if(c.length)return c[R(c.length)]}return null}
 
 function go(k){var p=db.p[k],pool=[],lp=[],i,t,x,lg,used={},qs=[];
-if(p.d!=today()){p.d=today();p.n=0}
-if(p.n>=2){alert('Jatah main hari ini habis. Besok main lagi ya!');return}
+if(p.d!=today()){p.d=today();p.n=0;p.x=0}
+if((db.max||2)+(p.x||0)-p.n<=0){alert('Jatah main hari ini habis. Besok main lagi ya!');return}
 for(i=0;i<db.bank.length;i++)if(db.bank[i].k==k)pool.push(db.bank[i]);
 for(i=0;i<db.lg.length;i++)if(!db.lg[i].k||db.lg[i].k==k)lp.push(db.lg[i]);
 if(!pool.length){alert('Belum ada soal untuk kelas ini. Minta orang tua mengisi soal.');return}
@@ -163,29 +170,34 @@ else if(pj){G.end='salah';G.msg='❌ Salah di soal penjaga! Hadiah di atas titik
 else if(G.strike&&!G.help){G.end='salah';G.msg='❌ Salah tanpa bantuan! Kamu langsung kalah dan hanya membawa '+rp(G.safe)}
 else{G.strike=1;G.won=G.safe+rnd50((G.won-G.safe)/2);G.msg='❌ Salah! Hadiah dipotong 50% jadi '+rp(G.won)}
 if(G.strike&&G.f==3&&!G.end&&G.i<39){G.end='bantuan';G.msg+=' Bantuan sudah habis, permainan selesai. Kamu bawa '+rp(G.safe)}
-if(G.to)G.msg='⏰ Waktu habis! '+G.msg;ss('db',db);render()}
+if(G.to)G.msg=(G.to==2?'🚫 Kamu meninggalkan aplikasi saat soal berjalan! ':'⏰ Waktu habis! ')+G.msg;ss('db',db);render()}
 function nxt(){if(G.end=='salah')fin(G.safe,'salah');else if(G.i>=39)fin(db.top,'tamat');else if(G.end=='bantuan')fin(G.safe,'bantuan habis');else{G.i++;ask()}}
 function quit(){if(confirm('Berhenti dan bawa pulang '+rp(G.won)+'?'))fin(G.won,'berhenti')}
 function homeBtn(){var w=G.end?G.safe:G.won;if(confirm('Kembali ke menu? Permainan berakhir dan hadiah '+rp(w)+' dibawa pulang.'))fin(w,'berhenti',1)}
-function fin(w,how,skip){stopT();var p=db.p[G.k];p.s+=w;p.h.unshift({d:today(),w:w,ok:G.ok,n:G.a,e:how});p.h=p.h.slice(0,30);ss('db',db);if(skip){home();return}
+function fin(w,how,skip){stopT();G.over=1;var p=db.p[G.k];p.s+=w;p.h.unshift({d:today(),w:w,ok:G.ok,n:G.a,e:how,aw:G.aw||0});p.h=p.h.slice(0,30);ss('db',db);if(db.rep){qAdd(G.k,{id:Date.now()+'-'+G.k,t:Date.now(),w:w,ok:G.ok,n:G.a,e:how,aw:G.aw||0});flushQ()}if(skip){home();return}
 $('rt').textContent=how=='tamat'?'🏆 JUTAWAN! Kamu sampai puncak!':how=='berhenti'?'🏁 Kamu berhenti dengan selamat':how=='bantuan habis'?'🆘 Bantuan habis, permainan selesai':'😢 Permainan selesai';
 $('rw').textContent=rp(w);$('rm').textContent=G.ok+' dari '+G.a+' soal benar. Hadiah masuk saldo, minta orang tuamu membayarnya.';
 snd(w>0);show('res')}
 
 function openPin(){$('pi').value='';$('pe').textContent='';show('pin')}
 function pinGo(){if($('pi').value===db.pin){rpar();show('par')}else $('pe').textContent='PIN salah, coba lagi.'}
-function rpar(){var h='',a=[7,9],i,j,k,p,n,x;$('tp').value=db.top;
+function rpar(){var h='',a=[7,9],i,j,k,p,n,x;$('tp').value=db.top;$('mx').value=db.max||2;
 $('gr').value=(db.gh&&db.gh.repo)||'';$('gb').value=(db.gh&&db.gh.br)||'';$('gt').placeholder=sg('tok','')?'Token tersimpan (isi untuk mengganti)':'Token GitHub';
 $('gs').textContent='Versi soal: '+(db.sv?new Date(db.sv).toLocaleString():'-')+(db.dirty?' · ada perubahan belum diterbitkan':'');
+$('hr').value=db.hr||'';$('hrep').checked=!!db.rep;$('ht').placeholder=sg('htok','')?'Token tersimpan (isi untuk mengganti)':'Token catatan';hsay('Antrean belum terkirim: '+(db.q||[]).length);
 for(i=0;i<2;i++){k=a[i];p=db.p[k];n=0;for(j=0;j<db.bank.length;j++)if(db.bank[j].k==k)n++;
 h+='<div class="card"><b>Kelas '+(k==7?'VII':'IX')+'</b> · '+n+' soal<br>Saldo belum dibayar: <b>'+rp(p.s)+'</b><br><button class="b ll" onclick="pay('+k+')">✅ Tandai sudah dibayar</button><button class="b ll" onclick="plus('+k+')">+1 jatah main</button><div style="font-size:13px">';
-for(j=0;j<p.h.length&&j<8;j++){x=p.h[j];h+=x.d+' · '+(x.e=='DIBAYAR'?'dibayar '+rp(x.w):rp(x.w)+' · '+x.ok+'/'+x.n+' benar · '+x.e)+'<br>'}
+for(j=0;j<p.h.length&&j<8;j++){x=p.h[j];h+=x.d+' · '+(x.e=='DIBAYAR'?'dibayar '+rp(x.w):rp(x.w)+' · '+x.ok+'/'+x.n+' benar · '+x.e+(x.aw?' · keluar app '+x.aw+'×':''))+'<br>'}
 h+='</div></div>'}
 var c=[0,0,0];for(j=0;j<db.lg.length;j++)c[db.lg[j].k==7?0:db.lg[j].k==9?1:2]++;
 $('pk').innerHTML=h+'<div class="card">Soal logika: kelas VII '+c[0]+' · kelas IX '+c[1]+' · umum (kedua kelas) '+c[2]+'</div>'}
-function pay(k){var p=db.p[k];if(p.s>0&&confirm('Tandai '+rp(p.s)+' sudah dibayar?')){p.h.unshift({d:today(),w:p.s,ok:0,n:0,e:'DIBAYAR'});p.s=0;ss('db',db);rpar()}}
-function plus(k){var p=db.p[k];p.n=Math.max(0,p.n-1);ss('db',db);alert('Jatah main hari ini ditambah 1.')}
-function saveTop(){var v=Math.round(parseInt($('tp').value,10)/1000)*1000;if(!(v>=2000)){alert('Minimal Rp2.000.');return}db.top=v;ss('db',db);alert('Hadiah puncak: '+rp(v))}
+function pay(k){var p=db.p[k],w,id;if(p.s>0&&confirm('Tandai '+rp(p.s)+' sudah dibayar?')){w=p.s;id='L'+Date.now();p.h.unshift({d:today(),w:w,ok:0,n:0,e:'DIBAYAR'});p.s=0;(db.pp=db.pp||[]).push(id);ss('db',db);
+if(db.rep&&db.hr&&sg('htok','')){addPay(k,w,id,function(ok){if(!ok)alert('Pembayaran tercatat di HP ini, tapi gagal dicatat di GitHub.')})}rpar()}}
+function plus(k){var p=db.p[k],g;
+if(ghRepo()&&sg('tok','')){g={id:Date.now()+'-'+k,k:k,n:1};db.grants=(db.grants||[]).concat([g]);ss('db',db);
+pubSoal(function(ok){if(!ok){db.grants.pop();ss('db',db)}alert(ok?'Jatah +1 kelas '+(k==7?'VII':'IX')+' terkirim. Masuk ke HP anak saat aplikasinya dibuka atau Update soal.':'Gagal mengirim jatah. Cek internet dan token.')})}
+else{if(p.d!=today()){p.d=today();p.n=0;p.x=0}p.x=(p.x||0)+1;ss('db',db);alert('Jatah main hari ini ditambah 1 (di HP ini).')}}
+function saveTop(){var v=Math.round(parseInt($('tp').value,10)/1000)*1000,m=parseInt($('mx').value,10);if(!(v>=2000)){alert('Minimal Rp2.000.');return}if(!(m>=1&&m<=10)){alert('Batas main per hari: 1 sampai 10.');return}db.top=v;db.max=m;db.cv=Date.now();db.dirty=1;ss('db',db);rpar();alert('Tersimpan: puncak '+rp(v)+', '+m+' kali per hari. Tekan 🚀 Terbitkan soal agar sampai ke HP anak.')}
 function addTxt(){var r=imp($('tx').value);$('tx').value='';$('rs').textContent=r[0]+' soal ditambahkan'+(r[1]?', '+r[1]+' baris dilewati (format kurang lengkap).':'.');rpar()}
 function clearAll(){if(confirm('Hapus SEMUA soal (umum dan logika)?')){db.bank=[];db.lg=[];db.dirty=1;ss('db',db);rpar()}}
 function newPin(){var v=tr($('np').value);if(v.length<4){alert('PIN minimal 4 angka.');return}db.pin=v;ss('db',db);$('np').value='';alert('PIN tersimpan.')}
@@ -206,6 +218,7 @@ if(st==404){say(man,'Belum ada soal online (tunggu sekitar 1 menit setelah diter
 if(st!=200){say(man,'Tidak bisa terhubung (kode '+st+'). Cek internet.');return}
 try{d=JSON.parse(tx)}catch(e){say(man,'File soal online rusak.');return}
 if(!d||!d.v){say(man,'File soal online tidak dikenali.');return}
+if(!db.dirty||man){i=applyCtl(d);if(i)say(man,'✅ Pengaturan dari orang tua diperbarui.')}
 if(!man&&(d.v<=db.sv||db.dirty))return;
 if(d.v<=db.sv&&!db.dirty){say(man,'Soal sudah yang terbaru.');return}
 for(i=0;i<(d.bank||[]).length;i++)if(okQ(d.bank[i])&&(d.bank[i].k==7||d.bank[i].k==9))b.push(d.bank[i]);
@@ -213,14 +226,66 @@ for(i=0;i<(d.lg||[]).length;i++)if(okQ(d.lg[i]))l.push(d.lg[i]);
 if(!b.length){say(man,'Soal online kosong, tidak dipakai.');return}
 db.bank=b;db.lg=l;db.sv=d.v;db.dirty=0;ss('db',db);say(man,'✅ Soal diperbarui: '+b.length+' soal + '+l.length+' logika.')})}
 function saveGh(){var t=tr($('gt').value);db.gh={repo:tr($('gr').value),br:tr($('gb').value)};if(t)ss('tok',t);ss('db',db);rpar();say(1,'Pengaturan disimpan.')}
-function pubSoal(){var r=ghRepo(),tok=sg('tok',''),v=Date.now(),u,h;
-if(!r||!tok){alert('Isi repo dan token GitHub dulu, lalu tekan Simpan.');return}
-if(!db.bank.length){alert('Belum ada soal untuk diterbitkan.');return}
+function pubSoal(cb){var r=ghRepo(),tok=sg('tok',''),v=Date.now(),u,h,gr;function fail(t){say(1,t);if(cb)cb(0)}
+if(!r||!tok){alert('Isi repo dan token GitHub dulu, lalu tekan Simpan.');if(cb)cb(0);return}
+if(!db.bank.length){alert('Belum ada soal untuk diterbitkan.');if(cb)cb(0);return}
+gr=(db.grants||[]).filter(function(g){return v-parseInt(g.id,10)<259200000});
 u=ghApi(r);h={'Accept':'application/vnd.github+json','Authorization':'Bearer '+tok};say(1,'Mengirim soal…');
 ajax('GET',u+'?ref='+ghBr()+'&_='+v,h,null,function(st,tx){var sha,o;
-if(st==200){try{sha=JSON.parse(tx).sha}catch(e){}}else if(st!=404){say(1,'Gagal (kode '+st+'). Cek nama repo dan token.');return}
-o={message:'Update soal',content:btoa(unescape(encodeURIComponent(JSON.stringify({v:v,bank:db.bank,lg:db.lg})))),branch:ghBr()};if(sha)o.sha=sha;
+if(st==200){try{sha=JSON.parse(tx).sha}catch(e){}}else if(st!=404){fail('Gagal (kode '+st+'). Cek nama repo dan token.');return}
+o={message:'Update soal',content:btoa(unescape(encodeURIComponent(JSON.stringify({v:v,bank:db.bank,lg:db.lg,top:db.top,max:db.max||2,cv:db.cv||0,grants:gr,hr:db.hr||''})))),branch:ghBr()};if(sha)o.sha=sha;
 h['Content-Type']='application/json';
-ajax('PUT',u,h,JSON.stringify(o),function(s2){if(s2==200||s2==201){db.sv=v;db.dirty=0;ss('db',db);say(1,'✅ Terbit: '+db.bank.length+' soal + '+db.lg.length+' logika. HP anak menarik otomatis dalam sekitar 1-2 menit.')}else say(1,'Gagal menerbitkan (kode '+s2+'). Cek izin token (Contents: Read and write).')})})}
-home();pullSoal(0);
+ajax('PUT',u,h,JSON.stringify(o),function(s2){if(s2==200||s2==201){db.sv=v;db.dirty=0;db.grants=gr;ss('db',db);if(cb)cb(1);say(1,'✅ Terbit: '+db.bank.length+' soal + '+db.lg.length+' logika. HP anak menarik otomatis dalam sekitar 1-2 menit.')}else fail('Gagal menerbitkan (kode '+s2+'). Cek izin token (Contents: Read and write).')})})}
+function applyCtl(d){var n=0,i,g,p,now=Date.now(),ids=db.gr||[];
+if(d.cv&&d.cv>(db.cv||0)){if(d.top>=2000)db.top=d.top;if(d.max>=1&&d.max<=10)db.max=d.max;db.cv=d.cv;n++}
+for(i=0;i<(d.grants||[]).length;i++){g=d.grants[i];if(!g||!g.id||ids.indexOf(g.id)>=0)continue;ids.push(g.id);
+if((g.k==7||g.k==9)&&now-parseInt(g.id,10)<259200000){p=db.p[g.k];if(p.d!=today()){p.d=today();p.n=0;p.x=0}p.x=(p.x||0)+(g.n||1);n++}}
+if(d.hr&&!db.hr){db.hr=d.hr;n++}db.gr=ids.slice(-100);ss('db',db);return n}
+function awayPen(){if(!G||G.over||G.lock||$('game').style.display!='block')return;stopT();G.aw=(G.aw||0)+1;G.sel=-2;G.to=2;lockIt()}
+document.addEventListener('visibilitychange',function(){if(document.hidden)awayPen()});
+function hsay(t){var e=$('hs');if(e)e.textContent=t}
+function sum(a){var s=0,i;for(i=0;i<(a||[]).length;i++)s+=a[i].w||0;return s}
+function hUrl(p){return 'https://api.github.com/repos/'+db.hr+'/contents/'+p}
+function hGet(p,cb){var t=sg('htok','');if(!db.hr||!t){cb(-1);return}
+ajax('GET',hUrl(p)+'?_='+Date.now(),{'Accept':'application/vnd.github+json','Authorization':'Bearer '+t},null,function(st,tx){var j,d;
+if(st!=200){cb(st);return}
+try{j=JSON.parse(tx);d=JSON.parse(decodeURIComponent(escape(atob(String(j.content).replace(/\s/g,'')))))}catch(e){cb(0);return}
+cb(200,d,j.sha)})}
+function hPut(p,obj,sha,cb){var o={message:'catat',content:btoa(unescape(encodeURIComponent(JSON.stringify(obj))))};if(sha)o.sha=sha;
+ajax('PUT',hUrl(p),{'Accept':'application/vnd.github+json','Authorization':'Bearer '+sg('htok',''),'Content-Type':'application/json'},JSON.stringify(o),function(st){cb(st==200||st==201)})}
+function qAdd(k,e){e.k=k;db.q=(db.q||[]).concat([e]);ss('db',db)}
+function flushQ(cb){var ks=[],i,a=[7,9],k;
+if(!db.rep||!db.hr||!sg('htok','')){if(cb)cb();return}
+if(!db.mig){db.mig=1;for(i=0;i<2;i++){k=a[i];if(db.p[k].s>0)qAdd(k,{id:'AWAL-'+k,t:Date.now(),w:db.p[k].s,ok:0,n:0,e:'saldo awal',aw:0})}ss('db',db)}
+for(i=0;i<(db.q||[]).length;i++)if(ks.indexOf(db.q[i].k)<0)ks.push(db.q[i].k);
+(function nx(){var k=ks.shift();if(!k){if(cb)cb();return}
+hGet('hasil-'+k+'.json',function(st,d,sha){var arr,seen={},mine=[],i,x,done={};
+if(st!=200&&st!=404){nx();return}
+arr=(d&&d.e)||[];for(i=0;i<arr.length;i++)seen[arr[i].id]=1;
+for(i=0;i<db.q.length;i++){x=db.q[i];if(x.k!=k)continue;done[x.id]=1;if(!seen[x.id])mine.push({id:x.id,t:x.t,w:x.w,ok:x.ok,n:x.n,e:x.e,aw:x.aw||0})}
+if(!mine.length){db.q=db.q.filter(function(y){return !(y.k==k&&done[y.id])});ss('db',db);nx();return}
+hPut('hasil-'+k+'.json',{e:arr.concat(mine)},sha,function(ok){if(ok){db.q=db.q.filter(function(y){return !(y.k==k&&done[y.id])});ss('db',db)}nx()})})})()}
+function addPay(k,w,id,cb){hGet('bayar-'+k+'.json',function(st,d,sha){var a;if(st!=200&&st!=404){cb(0);return}a=(d&&d.p)||[];a.push({id:id,t:Date.now(),w:w});hPut('bayar-'+k+'.json',{p:a},sha,cb)})}
+function syncPay(){var ks=[7,9];if(!db.rep||!db.hr||!sg('htok',''))return;
+(function nx(){var k=ks.shift();if(!k)return;hGet('bayar-'+k+'.json',function(st,d){var a=(d&&d.p)||[],i,ch=0,pp=db.pp||[];
+if(st==200)for(i=0;i<a.length;i++)if(pp.indexOf(a[i].id)<0){pp.push(a[i].id);db.p[k].s=Math.max(0,db.p[k].s-a[i].w);ch=1}
+if(ch){db.pp=pp.slice(-200);ss('db',db)}nx()})})()}
+function saveHr(){var t=tr($('ht').value);db.hr=tr($('hr').value).replace(/^https?:\/\/github\.com\//,'').replace(/\/$/,'');db.rep=$('hrep').checked?1:0;if(t)ss('htok',t);$('ht').value='';ss('db',db);rpar();hsay('Tersimpan.'+(db.rep?' HP ini mencatat hasil permainan.':''))}
+var LG={};
+function loadLedger(){var ks=[7,9];hsay('Memuat catatan…');
+(function nx(){var k=ks.shift();if(!k){renderLg();hsay('');return}
+hGet('hasil-'+k+'.json',function(s1,d1){hGet('bayar-'+k+'.json',function(s2,d2){
+if(s1==-1){hsay('Isi repo hasil dan token dulu, lalu Simpan.');return}
+if((s1!=200&&s1!=404)||(s2!=200&&s2!=404)){hsay('Gagal memuat (kode '+s1+'/'+s2+'). Cek nama repo dan token.');return}
+LG[k]={e:(d1&&d1.e)||[],p:(d2&&d2.p)||[]};nx()})})})()}
+function renderLg(){var h='',a=[7,9],i,j,k,L,s,e;
+for(i=0;i<2;i++){k=a[i];L=LG[k];if(!L)continue;s=sum(L.e)-sum(L.p);
+h+='<div style="margin-top:8px"><b>Kelas '+(k==7?'VII':'IX')+' · saldo belum dibayar: '+rp(s)+'</b><br><button class="b ll" onclick="payRemote('+k+','+s+')">✅ Tandai sudah dibayar</button><div style="font-size:12px">';
+for(j=L.e.length-1;j>=Math.max(0,L.e.length-8);j--){e=L.e[j];h+=new Date(e.t).toLocaleString()+' · '+rp(e.w)+' · '+e.ok+'/'+e.n+' benar · '+e.e+(e.aw?' · keluar app '+e.aw+'×':'')+'<br>'}
+if(L.p.length){e=L.p[L.p.length-1];h+='Terakhir dibayar: '+rp(e.w)+' ('+new Date(e.t).toLocaleDateString()+')<br>'}
+h+='</div></div>'}
+$('lg').innerHTML=h||'Belum ada catatan.'}
+function payRemote(k,s){if(!(s>0)){alert('Tidak ada saldo untuk dibayar.');return}
+if(confirm('Tandai '+rp(s)+' untuk kelas '+(k==7?'VII':'IX')+' sudah dibayar?'))addPay(k,s,'P'+Date.now(),function(ok){if(ok)loadLedger();else hsay('Gagal mencatat pembayaran.')})}
+home();pullSoal(0);flushQ();syncPay();
 </script></body></html>
